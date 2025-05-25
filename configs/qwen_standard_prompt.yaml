@@ -1,0 +1,25 @@
+# Configuration pour Qwen3
+model: "Qwen/Qwen3-0.6B"
+temperature: 1.0
+top_p: 0.95
+max_new_tokens: 2000
+max_length: 32768
+
+# Instruction RAG
+instruction: "Write an accurate, engaging, and concise answer for the given question using only the provided search results (some of which might be irrelevant). Use an unbiased and journalistic tone."
+
+# Format des documents
+doc_prompt: "Document [{ID}](Title: {T}): {P}\n"
+
+# Pour Qwen3, on utilise le format de chat
+use_chat_template: true
+enable_thinking: false  # Spécifique à Qwen3
+
+# Template manuel (fallback si nécessaire)
+demo_prompt: "<|im_start|>user\n{INST}\n\nQuestion: {Q}\n\n{D}\n<|im_end|>\n<|im_start|>assistant\n{A}<|im_end|>"
+
+# Tokens spéciaux
+decoder_input_output_separator: "\n"
+special_tokens_to_keep: ["<|im_end|>", "</think>"]
+tokenizer_newline_token: "<0x0A>"  # À vérifier pour Qwen3
+stop_tokens: ["<|im_end|>", "<|endoftext|>"]

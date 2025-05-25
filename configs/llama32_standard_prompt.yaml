@@ -1,0 +1,24 @@
+# Configuration pour Llama 3.2
+model: "meta-llama/Llama-3.2-1B"
+temperature: 1.0
+top_p: 0.95
+max_new_tokens: 300
+max_length: 8192
+
+# Instruction système
+instruction: "You are a helpful assistant. Write an accurate, engaging, and concise answer for the given question using only the provided search results. Use an unbiased and journalistic tone."
+
+# Format des documents
+doc_prompt: "Document [{ID}](Title: {T}): {P}\n"
+
+# Utiliser le chat template natif
+use_chat_template: true
+
+# Template manuel (si chat template échoue)
+demo_prompt: "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n{INST}<|eot_id|><|start_header_id|>user<|end_header_id|>\nQuestion: {Q}\n\n{D}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n{A}<|eot_id|>"
+
+# Tokens spéciaux pour Llama 3
+decoder_input_output_separator: "\n"
+special_tokens_to_keep: ["<|eot_id|>", "<|end_of_text|>"]
+tokenizer_newline_token: "Ċ"  # Token 198 pour Llama
+stop_tokens: ["<|eot_id|>", "<|end_of_text|>"]

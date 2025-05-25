@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIRAGE Citation &amp; interpretability tool (a bit modified)</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script
+        id="MathJax-script"
+        async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .input-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .documents-section {
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        
+        .document-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .document-item input {
+            margin-bottom: 10px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-add {
+            background-color: #27ae60;
+            color: white;
+        }
+        
+        .btn-add:hover {
+            background-color: #229954;
+        }
+        
+        .btn-remove {
+            background-color: #e74c3c;
+            color: white;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+        
+        .btn-remove:hover {
+            background-color: #c0392b;
+        }
+        
+        .upload-section {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .upload-info {
+            font-size: 14px;
+            color: #7f8c8d;
+            flex: 1;
+        }
+        
+        .output-section {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #a5d6a7;
+        }
+        
+        .output-section textarea {
+            background-color: white;
+            min-height: 150px;
+        }
+        
+        .toggle-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background-color: #ccc;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background-color: #4CAF50;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(26px);
+        }
+        
+        .results-section {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .result-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .result-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background-color: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .cited-sentence {
+            background-color: #e3f2fd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .citation-number {
+            color: #1976d2;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        
+        .highlight {
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+        
+        /* Document colors */
+        .doc-color-0 { background-color: rgba(255, 99, 132, 0.3); }
+        .doc-color-1 { background-color: rgba(54, 162, 235, 0.3); }
+        .doc-color-2 { background-color: rgba(255, 205, 86, 0.3); }
+        .doc-color-3 { background-color: rgba(75, 192, 192, 0.3); }
+        .doc-color-4 { background-color: rgba(153, 102, 255, 0.3); }
+        .doc-color-5 { background-color: rgba(255, 159, 64, 0.3); }
+        
+        .highlighted-doc {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        
+        .doc-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+        
+        .highlighted-text {
+            background-color: rgba(255, 235, 59, 0.4);
+            padding: 2px;
+            border-radius: 2px;
+        }
+        
+        .parameters-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        
+        .parameter-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .parameter-item label {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        
+        .parameter-item input,
+        .parameter-item select {
+            padding: 5px;
+            font-size: 14px;
+        }
+        
+        .token-highlight {
+            display: inline-block;
+            padding: 2px 4px;
+            margin: 1px;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+        
+        .token-highlight:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+        
+        .info-box {
+            background-color: #e3f2fd;
+            border: 1px solid #64b5f6;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #1565c0;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: #555;
+            margin-top: 0.25em;
+        }
+
+        .explanation-frame {
+            border: 1px solid #e0e0e0;
+            background-color: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: small;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+        <a href="https://aclanthology.org/2024.emnlp-main.347/" target="_blank" rel="noopener" style="text-decoration: underline;">
+            MIRAGE
+        </a>
+        Citation &amp; interpretability tool (a bit modified)
+        </h1>
+
+        <!-- Explanation du fonctionnement -->
+        <div class="explanation-frame">
+            <section id="cti">
+                <h2>1. CTI (Context–Token Importance)</h2>
+                <ol>
+                    <li>
+                        Pour chaque token généré <em>y<sub>i</sub></em>, on compare les distributions
+                        prédictives du modèle avec et sans le contexte :
+                        <ul>
+                            <li><code>P<sup>ctx</sup><sub>i</sub></code> : distribution avec le contexte</li>
+                            <li><code>P<sup>no-ctx</sup><sub>i</sub></code> : distribution sans le contexte</li>
+                        </ul>
+                    </li>
+                    <li>
+                        On calcule la divergence KL :
+                        <p>$$m_i = \mathrm{KL}\bigl(P^{\text{ctx}}_i \| P^{\text{no-ctx}}_i\bigr)$$</p>
+                    </li>
+                    <li>
+                        On sélectionne les tokens sensibles via un seuil <em>m<sup>*</sup></em> :
+                        <p>
+                            Si <code>m<sub>i</sub> &ge; m<sup>*</sup></code>,
+                            alors <strong>CTI(y<sub>i</sub>)</strong> est vraie.
+                        </p>
+                    </li>
+                </ol>
+            </section>
+
+            <section id="cci">
+                <h2>2. CCI (Context–Context Importance)</h2>
+                <ol>
+                    <li>
+                        Pour chaque token <em>y<sub>i</sub></em> avec CTI élevée, on mesure l'importance
+                        des tokens de contexte via la librairie
+                        <a href="https://github.com/inseq-team/inseq" target="_blank" rel="noopener">Inseq</a>:
+                        <ul>
+                            <li>
+                                On note $e(c_j)$ le vecteur d'embedding du token de contexte $c_j$. On veut voir dans quelle direction (dans l’espace des embeddings) une petite perturbation de $e(c_j)$ augmenterait le plus la différence de log-probabilité du token prédit $y_i$ avec et sans contexte. On mesure cela avec un calcul du gradient $\nabla_{e(c_j)}[\Delta_i]$ :
+                                <p>
+                                    $$a_{ij} = \bigl\|\nabla_{e(c_j)}\bigl[\log p(y_i\mid\mathrm{ctx}) - \log p(y_i\mid\mathrm{no\text{-}ctx})\bigr]\bigr\|_2$$
+                                </p>
+                            </li>
+                            <li>
+                                Conserver les <em>Top-K</em> ou <em>Top X %</em> scores <code>a<sub>ij</sub></code>
+                                pour chaque <em>y<sub>i</sub></em>.
+                            </li>
+                        </ul>
+                    </li>
+                </ol>
+            </section>
+
+            <section id="aggregation">
+                <h2>3. Agrégation et citations</h2>
+                <ol>
+                    <li>Regrouper les paires <em>(y<sub>i</sub>, c<sub>j</sub>)</em> par document d’origine.</li>
+                    <li>
+                        Pour chaque document, sommer les scores <code>a<sub>ij</sub></code> retenus :
+                        <ul>
+                            <li>Si la somme dépasse un seuil, citer le document pour la phrase générée.</li>
+                        </ul>
+                    </li>
+                    <li>Générer les citations inline ou en highlight selon le format souhaité.</li>
+                </ol>
+            </section>
+        </div>
+        
+        <div class="input-section">
+            <form id="mirageForm">
+                <div class="form-group">
+                    <label for="instruction">System Instruction:</label>
+                    <textarea id="instruction" name="instruction" required>You are a helpful assistant that answers questions based on the provided documents. Cite the documents you use to support your answer.</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="question">Question:</label>
+                    <input type="text" id="question" name="question" required placeholder="Enter your question here...">
+                </div>
+                
+                <div class="form-group">
+                    <label>Documents:</label>
+                    <div class="documents-section">
+                        <div class="upload-section">
+                            <div>
+                                <label for="jsonUpload" class="btn-secondary" style="display: inline-block; padding: 8px 15px; cursor: pointer; margin: 0;">
+                                    📁 Upload JSON File
+                                </label>
+                                <input type="file" id="jsonUpload" accept=".json" style="display: none;" onchange="handleJsonUpload(event)">
+                            </div>
+                            <div class="upload-info">
+                                Upload a JSON file with format: {"question": "...", "docs": [{"title": "...", "text": "..."}, ...], "output": "optional pre-generated output"}
+                            </div>
+                            <span id="uploadStatus" style="color: #27ae60; font-weight: bold;"></span>
+                        </div>
+                        <div id="documentsContainer">
+                            <div class="document-item">
+                                <input type="text" name="doc_title[]" placeholder="Document Title" required>
+                                <textarea name="doc_text[]" placeholder="Document Text" required></textarea>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-add" onclick="addDocument()">Add Document</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="toggle-section">
+                        <label style="margin: 0;">Provide Pre-generated Output:</label>
+                        <div class="toggle-switch" id="outputToggle" onclick="toggleOutput()">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span id="outputToggleLabel" style="color: #666;">No</span>
+                    </div>
+                    <div class="output-section" id="outputSection" style="display: none;">
+                        <div class="info-box">
+                            ℹ️ If you already have the model's output, paste it here to skip the generation step and go directly to attribution analysis.
+                        </div>
+                        <label for="preGeneratedOutput">Pre-generated Output:</label>
+                        <textarea id="preGeneratedOutput" name="preGeneratedOutput" placeholder="Paste the model's generated output here..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Advanced Parameters:</label>
+                    <div class="parameters-section">
+                        <div class="parameter-item">
+                            <label for="model">Model:</label>
+                            <select id="model" name="model">
+                                <option value="Qwen/Qwen3-0.6B">Qwen3-0.6B</option>
+                                <option value="Qwen/Qwen2.5-1.5B">Qwen2.5-1.5B</option>
+                                <option value="meta-llama/Llama-3.2-1B">Llama-3.2-1B</option>
+                            </select>
+                        </div>
+                        
+                        <div class="parameter-item">
+                            <label for="cti_threshold">CTI Threshold:</label>
+                            <input type="number" id="cti_threshold" name="cti_threshold" value="1" min="0" max="5" step="1">
+                        </div>
+                        
+                        <div class="parameter-item">
+                            <label for="cci_threshold">CCI Threshold:</label>
+                            <input type="number" id="cci_threshold" name="cci_threshold" value="-5" min="-100" max="0" step="5">
+                        </div>
+                        
+                        <div class="parameter-item">
+                            <label for="temperature">Temperature:</label>
+                            <input type="number" id="temperature" name="temperature" value="1.0" min="0.1" max="2.0" step="0.1">
+                        </div>
+                        
+                        <div class="parameter-item">
+                            <label for="max_tokens">Max Tokens:</label>
+                            <input type="number" id="max_tokens" name="max_tokens" value="500" min="50" max="2000" step="50">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">Process with MIRAGE</button>
+                    <button type="button" class="btn-secondary" onclick="resetForm()">Reset</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="loading">
+            <div class="spinner"></div>
+            <p id="loadingMessage">Processing with MIRAGE... This may take a few moments.</p>
+        </div>
+        
+        <div class="results-section" id="resultsSection">
+            <h2>Results</h2>
+            
+            <div class="result-card">
+                <h3>Generated Answer with Citations</h3>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color doc-color-0"></div>
+                        <span>Document 1</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color doc-color-1"></div>
+                        <span>Document 2</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color doc-color-2"></div>
+                        <span>Document 3</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color doc-color-3"></div>
+                        <span>Document 4</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color doc-color-4"></div>
+                        <span>Document 5</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color doc-color-5"></div>
+                        <span>Document 6</span>
+                    </div>
+                </div>
+                <div id="generatedOutput"></div>
+            </div>
+            
+            <div class="result-card">
+                <h3>Attributed Answer (Token-level highlights)</h3>
+                <div id="attributedOutput"></div>
+            </div>
+            
+            <div class="result-card">
+                <h3>Document Highlights</h3>
+                <div id="documentHighlights"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let documentCount = 1;
+        let outputToggleActive = false;
+        
+        function toggleOutput() {
+            outputToggleActive = !outputToggleActive;
+            const toggle = document.getElementById('outputToggle');
+            const section = document.getElementById('outputSection');
+            const label = document.getElementById('outputToggleLabel');
+            
+            if (outputToggleActive) {
+                toggle.classList.add('active');
+                section.style.display = 'block';
+                label.textContent = 'Yes';
+            } else {
+                toggle.classList.remove('active');
+                section.style.display = 'none';
+                label.textContent = 'No';
+                document.getElementById('preGeneratedOutput').value = '';
+            }
+        }
+        
+        function addDocument() {
+            documentCount++;
+            const container = document.getElementById('documentsContainer');
+            const newDoc = document.createElement('div');
+            newDoc.className = 'document-item';
+            newDoc.innerHTML = `
+                <input type="text" name="doc_title[]" placeholder="Document Title" required>
+                <textarea name="doc_text[]" placeholder="Document Text" required></textarea>
+                <button type="button" class="btn-remove" onclick="removeDocument(this)" style="margin-top: 5px;">Remove</button>
+            `;
+            container.appendChild(newDoc);
+        }
+        
+        function removeDocument(button) {
+            button.parentElement.remove();
+            documentCount--;
+        }
+        
+        function handleJsonUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    // Validate JSON structure
+                    if (!data.question || !data.docs || !Array.isArray(data.docs)) {
+                        throw new Error('Invalid JSON format. Expected {question: string, docs: [{title: string, text: string}, ...], output: optional string}');
+                    }
+                    
+                    // Set question
+                    document.getElementById('question').value = data.question;
+                    
+                    // Clear existing documents
+                    const container = document.getElementById('documentsContainer');
+                    container.innerHTML = '';
+                    documentCount = 0;
+                    
+                    // Add documents from JSON
+                    data.docs.forEach((doc, index) => {
+                        if (!doc.title || !doc.text) {
+                            console.warn(`Document ${index + 1} missing title or text, skipping`);
+                            return;
+                        }
+                        
+                        documentCount++;
+                        const newDoc = document.createElement('div');
+                        newDoc.className = 'document-item';
+                        newDoc.innerHTML = `
+                            <input type="text" name="doc_title[]" placeholder="Document Title" value="${escapeHtml(doc.title)}" required>
+                            <textarea name="doc_text[]" placeholder="Document Text" required>${escapeHtml(doc.text)}</textarea>
+                            ${documentCount > 1 ? '<button type="button" class="btn-remove" onclick="removeDocument(this)" style="margin-top: 5px;">Remove</button>' : ''}
+                        `;
+                        container.appendChild(newDoc);
+                    });
+                    
+                    // Check if output is provided
+                    if (data.output) {
+                        outputToggleActive = true;
+                        document.getElementById('outputToggle').classList.add('active');
+                        document.getElementById('outputSection').style.display = 'block';
+                        document.getElementById('outputToggleLabel').textContent = 'Yes';
+                        document.getElementById('preGeneratedOutput').value = data.output;
+                    }
+                    
+                    // Show success message
+                    const statusEl = document.getElementById('uploadStatus');
+                    statusEl.textContent = `✓ Loaded ${documentCount} documents${data.output ? ' with pre-generated output' : ''}`;
+                    setTimeout(() => {
+                        statusEl.textContent = '';
+                    }, 3000);
+                    
+                } catch (error) {
+                    alert('Error parsing JSON: ' + error.message);
+                    console.error('JSON parsing error:', error);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function resetForm() {
+            document.getElementById('mirageForm').reset();
+            document.getElementById('resultsSection').style.display = 'none';
+            documentCount = 1;
+            outputToggleActive = false;
+            document.getElementById('outputToggle').classList.remove('active');
+            document.getElementById('outputSection').style.display = 'none';
+            document.getElementById('outputToggleLabel').textContent = 'No';
+            const container = document.getElementById('documentsContainer');
+            container.innerHTML = `
+                <div class="document-item">
+                    <input type="text" name="doc_title[]" placeholder="Document Title" required>
+                    <textarea name="doc_text[]" placeholder="Document Text" required></textarea>
+                </div>
+            `;
+            document.getElementById('uploadStatus').textContent = '';
+        }
+        
+        function displayResults(data) {
+            // Display generated output with citations
+            const output = data.output;
+            document.getElementById('generatedOutput').innerHTML = formatOutputWithCitations(output);
+            
+            // Display attributed output with token highlights
+            if (data.token_highlights) {
+                document.getElementById('attributedOutput').innerHTML = formatTokenHighlights(data.token_highlights);
+            } else {
+                document.getElementById('attributedOutput').innerHTML = '<p>No token highlights available</p>';
+            }
+            
+            // Display document highlights
+            if (data.document_highlights) {
+                document.getElementById('documentHighlights').innerHTML = formatDocumentHighlights(data.document_highlights);
+            }
+            
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+        
+        function formatOutputWithCitations(text) {
+            // Highlight citations in the text
+            return text.replace(/\[(\d+)\]/g, '<span class="citation-number">[$1]</span>');
+        }
+        
+        function formatTokenHighlights(tokenHighlights) {
+            if (!tokenHighlights || tokenHighlights.length === 0) {
+                return '<p>No token-level attribution data available</p>';
+            }
+            
+            let html = '<div style="line-height: 2.5; font-family: monospace;">';
+            let previousHadSpace = false;
+            
+            tokenHighlights.forEach((item, idx) => {
+                // Handle spacing based on token
+                let displayToken = item.token;
+                let needsSpace = false;
+                
+                // Check if token starts with space indicator
+                if (displayToken.startsWith(' ')) {
+                    needsSpace = true;
+                    displayToken = displayToken.substring(1);
+                } else if (idx > 0 && !previousHadSpace && 
+                          !displayToken.match(/^[.,!?;:]/) &&
+                          tokenHighlights[idx-1].token !== '(' &&
+                          displayToken !== ')') {
+                    // Add space before token if needed
+                    needsSpace = true;
+                }
+                
+                // Add space if needed
+                if (needsSpace && idx > 0) {
+                    html += ' ';
+                }
+                
+                if (item.doc_idx >= 0 && item.score > 0) {
+                    const opacity = Math.min(0.3 + item.score * 0.7, 1);
+                    const allScores = item.all_doc_scores ? 
+                        item.all_doc_scores.map((s, i) => `Doc ${i+1}: ${s.toFixed(3)}`).join(', ') : 
+                        `Doc ${item.doc_idx + 1}: Score ${item.score.toFixed(3)}`;
+                    
+                    html += `<span class="token-highlight doc-color-${item.doc_idx}" 
+                            style="opacity: ${opacity};" 
+                            title="${allScores}">
+                            ${displayToken}</span>`;
+                } else {
+                    html += `<span style="opacity: 0.5;">${displayToken}</span>`;
+                }
+                
+                previousHadSpace = displayToken.endsWith(' ');
+            });
+            html += '</div>';
+            return html;
+        }
+        
+        function formatDocumentHighlights(highlights) {
+            let html = '';
+            highlights.forEach((doc, idx) => {
+                // Check if document has highlights or attribution
+                const hasHighlights = doc.highlights && doc.highlights.length > 0;
+                const hasAttribution = doc.has_attribution;
+                const isCited = doc.is_cited;
+                
+                // Only show documents that have some form of attribution or citation
+                if (hasHighlights || hasAttribution || isCited) {
+                    html += `<div class="highlighted-doc">
+                        <div class="doc-title doc-color-${idx}">
+                            Document ${idx + 1}: ${doc.title} 
+                            ${isCited ? '<span style="font-size: 0.8em; opacity: 0.7;">(cited)</span>' : ''}
+                            ${!isCited && hasAttribution ? '<span style="font-size: 0.8em; opacity: 0.7;">(attributed but not cited)</span>' : ''}
+                        </div>
+                        <div style="white-space: pre-wrap;">`;
+                    
+                    if (hasHighlights) {
+                        // Get full document text
+                        const fullText = doc.full_text || '';
+                        let lastEnd = 0;
+                        
+                        // Sort highlights by start position
+                        const sortedHighlights = doc.highlights.sort((a, b) => a.start - b.start);
+                        
+                        sortedHighlights.forEach(highlight => {
+                            // Add non-highlighted text before this highlight
+                            if (highlight.start > lastEnd) {
+                                html += `<span style="opacity: 0.5;">${escapeHtml(fullText.substring(lastEnd, highlight.start))}</span>`;
+                            }
+                            
+                            // Add highlighted text
+                            const opacity = Math.min(0.3 + highlight.score * 0.7, 1);
+                            html += `<span class="highlighted-text doc-color-${idx}" 
+                                    style="opacity: ${opacity}; font-weight: bold;" 
+                                    title="Attribution score: ${highlight.score.toFixed(3)}">
+                                    ${escapeHtml(highlight.text)}</span>`;
+                            
+                            lastEnd = highlight.end;
+                        });
+                        
+                        // Add remaining text
+                        if (lastEnd < fullText.length) {
+                            html += `<span style="opacity: 0.5;">${escapeHtml(fullText.substring(lastEnd))}</span>`;
+                        }
+                    } else {
+                        // Document has attribution but no specific highlights
+                        html += `<div style="opacity: 0.5; font-style: italic;">
+                            ${isCited ? 
+                                'This document was cited but no specific text portions were highlighted by the attribution analysis.' :
+                                'This document contributed to the answer but was not explicitly cited and no specific text portions were highlighted.'
+                            }
+                        </div>`;
+                    }
+                    
+                    html += '</div></div>';
+                }
+            });
+            
+            return html || '<p>No document highlights found</p>';
+        }
+        
+        document.getElementById('mirageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading
+            document.querySelector('.loading').style.display = 'block';
+            document.getElementById('resultsSection').style.display = 'none';
+            
+            // Update loading message based on whether output is provided
+            const loadingMessage = document.getElementById('loadingMessage');
+            const hasOutput = outputToggleActive && document.getElementById('preGeneratedOutput').value;
+            loadingMessage.textContent = hasOutput ? 
+                'Analyzing with MIRAGE... Skipping generation step.' : 
+                'Processing with MIRAGE... This may take a few moments.';
+            
+            // Gather form data
+            const formData = new FormData(e.target);
+            const documents = [];
+            const titles = formData.getAll('doc_title[]');
+            const texts = formData.getAll('doc_text[]');
+            
+            for (let i = 0; i < titles.length; i++) {
+                if (titles[i] && texts[i]) {
+                    documents.push({
+                        title: titles[i],
+                        text: texts[i]
+                    });
+                }
+            }
+            
+            const requestData = {
+                instruction: formData.get('instruction'),
+                question: formData.get('question'),
+                documents: documents,
+                model: formData.get('model'),
+                cti_threshold: parseInt(formData.get('cti_threshold')),
+                cci_threshold: parseInt(formData.get('cci_threshold')),
+                temperature: parseFloat(formData.get('temperature')),
+                max_new_tokens: parseInt(formData.get('max_tokens'))
+            };
+            
+            // Add pre-generated output if provided
+            if (outputToggleActive && formData.get('preGeneratedOutput')) {
+                requestData.output = formData.get('preGeneratedOutput');
+            }
+            
+            try {
+                const response = await fetch('/process', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while processing your request. Please try again.');
+            } finally {
+                document.querySelector('.loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

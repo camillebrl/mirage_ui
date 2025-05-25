@@ -1,0 +1,25 @@
+# Configuration pour Phi-4
+model: "microsoft/Phi-4-mini-instruct"
+temperature: 0.7
+top_p: 0.95
+max_new_tokens: 500
+max_length: 16384
+trust_remote_code: true  # Requis pour Phi-4
+
+# Instruction système
+instruction: "You are a helpful AI assistant. Write an accurate answer using only the provided documents."
+
+# Format des documents
+doc_prompt: "Document [{ID}](Title: {T}): {P}\n"
+
+# Utiliser le chat template
+use_chat_template: true
+
+# Template manuel pour Phi-4
+demo_prompt: "<|system|>\n{INST}<|end|>\n<|user|>\nQuestion: {Q}\n\nDocuments:\n{D}<|end|>\n<|assistant|>\n{A}"
+
+# Tokens spéciaux
+decoder_input_output_separator: "\n"
+special_tokens_to_keep: ["<|end|>"]
+tokenizer_newline_token: "<0x0A>"
+stop_tokens: ["<|end|>", "<|endoftext|>"]
