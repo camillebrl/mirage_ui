@@ -160,37 +160,6 @@ If models fail to load:
 2. Check internet connection for model downloads
 3. Verify CUDA installation for GPU support
 
-## Development
-
-### Project Structure
-```
-mirage-ui/
-├── src/mirage_ui/
-│   ├── mirage_app.py          # Main FastAPI application
-│   └── template.html          # Web interface
-├── pyproject.toml             # Dependencies and configuration
-└── README.md
-```
-
-### Contributing
-1. Fork the repository
-2. Create a feature branch
-3. Make changes and test thoroughly
-4. Submit a pull request
-
-## Citation
-
-If you use this tool in your research, please cite the original MIRAGE paper:
-
-```bibtex
-@inproceedings{mirage2024,
-  title={MIRAGE: Model Interpretability through Retrieval-Augmented Generation Explanations},
-  booktitle={EMNLP 2024},
-  year={2024},
-  url={https://aclanthology.org/2024.emnlp-main.347/}
-}
-```
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
